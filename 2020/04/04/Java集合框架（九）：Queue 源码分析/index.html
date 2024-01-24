@@ -1,0 +1,406 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Java集合框架（九）：Queue 源码分析 | 黄皖's Blog</title><meta name="author" content="黄皖"><meta name="copyright" content="黄皖"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="1、Queue 简述1、Queue 简述队列是一种特殊的线性表，它只允许在表的前端（front）进行删除操作，而在表的后端（rear）进行插入操作。进行插入操作的端称为队尾，进行删除操作的端称为队头。队列中没有元素时，称为空队列。 Java Queue是java.util包中提供的接口，并扩展了java.util.Collection接口。就像Java List一样，Java Queue是有序元素">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java集合框架（九）：Queue 源码分析">
+<meta property="og:url" content="http://huangwan.top/2020/04/04/Java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%EF%BC%88%E4%B9%9D%EF%BC%89%EF%BC%9AQueue%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="黄皖&#39;s Blog">
+<meta property="og:description" content="1、Queue 简述1、Queue 简述队列是一种特殊的线性表，它只允许在表的前端（front）进行删除操作，而在表的后端（rear）进行插入操作。进行插入操作的端称为队尾，进行删除操作的端称为队头。队列中没有元素时，称为空队列。 Java Queue是java.util包中提供的接口，并扩展了java.util.Collection接口。就像Java List一样，Java Queue是有序元素">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img.huangwan.top/blog_bg/18.webp">
+<meta property="article:published_time" content="2020-04-04T09:39:20.000Z">
+<meta property="article:modified_time" content="2024-01-18T08:42:40.726Z">
+<meta property="article:author" content="黄皖">
+<meta property="article:tag" content="框架">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.huangwan.top/blog_bg/18.webp"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://huangwan.top/2020/04/04/Java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%EF%BC%88%E4%B9%9D%EF%BC%89%EF%BC%9AQueue%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.12.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.32/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: 黄皖","link":"链接: ","source":"来源: 黄皖's Blog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Java集合框架（九）：Queue 源码分析',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-01-18 16:42:40'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.1.1"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://img.huangwan.top/blog_bg/avatar.webp" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">84</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">16</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/books/"><i class="fa-fw fas fa-book"></i><span> 阅读</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://img.huangwan.top/blog_bg/18.webp')"><nav id="nav"><span id="blog-info"><a href="/" title="黄皖's Blog"><span class="site-name">黄皖's Blog</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/books/"><i class="fa-fw fas fa-book"></i><span> 阅读</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Java集合框架（九）：Queue 源码分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-04-04T09:39:20.000Z" title="发表于 2020-04-04 17:39:20">2020-04-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-01-18T08:42:40.726Z" title="更新于 2024-01-18 16:42:40">2024-01-18</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/">java集合框架</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Java集合框架（九）：Queue 源码分析"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="1、Queue-简述1、Queue-简述"><a href="#1、Queue-简述1、Queue-简述" class="headerlink" title="1、Queue 简述1、Queue 简述"></a>1、Queue 简述1、Queue 简述</h2><p><strong>队列</strong>是一种<strong>特殊的线性表</strong>，它只允许在表的<strong>前端</strong>（front）进行<strong>删除</strong>操作，而在表的<strong>后端</strong>（rear）进行<strong>插入</strong>操作。进行插入操作的端称为队尾，进行删除操作的端称为队头。队列中没有元素时，称为空队列。</p>
+<p>Java Queue是java.util包中提供的接口，并扩展了java.util.Collection接口。<br>就像Java List一样，Java Queue是有序元素（或对象）的集合，但它以不同方式执行插入和删除操作。 在处理这些元素之前，我们可以使用Queue存储元素。</p>
+<p><img src="https://s1.ax1x.com/2020/04/04/GwURzD.png"></p>
+<p>🌂java.util.Queue接口是java.util.Collection接口的子类型。</p>
+<p>🌂就像现实世界的排队（例如，在银行或ATM中）一样，Queue在队列的末尾插入元素并从队列的开头删除元素。</p>
+<p>🌂Java Queue遵循FIFO顺序来插入和删除它的元素。 FIFO代表先入先出。</p>
+<p>🌂Java Queue支持Collection接口的所有方法。</p>
+<p>🌂最常用的Queue实现是LinkedList，ArrayBlockingQueue和PriorityQueue。</p>
+<p>🌂BlockingQueues不接受null元素。 如果我们执行任何与null相关的操作，它将抛出NullPointerException。</p>
+<p>🌂BlockingQueues用于实现基于生产者&#x2F;消费者的应用程序。</p>
+<p>🌂BlockingQueues是线程安全的。</p>
+<p>🌂java.util包中可用的所有队列都是无界队列，java.util.concurrent包中可用的队列是有界队列。</p>
+<p>🌂所有Deques都不是线程安全的。</p>
+<p>🌂ConcurrentLinkedQueue 是一个基于链表的无界线程安全队列。</p>
+<p>🌂除了Deques之外，所有队列都支持在队列尾部插入并在队列的头部删除。</p>
+<p>🌂Deques 是双端队列，它支持在队列两端插入和移除元素。</p>
+<p><img src="https://s1.ax1x.com/2020/04/04/GwUgJK.png"></p>
+<h2 id="2、Queue-类图"><a href="#2、Queue-类图" class="headerlink" title="2、Queue 类图"></a>2、Queue 类图</h2><p><img src="https://s1.ax1x.com/2020/04/04/GwUodI.jpg"><br>Java Queue 接口<strong>扩展了 Collection</strong> 接口。 Collection 接口扩展了 Iterable 接口。 一些常用的Queue实现类是 LinkedList，PriorityQueue，ArrayBlockingQueue，DelayQueue，LinkedBlockingQueue，PriorityBlockingQueue 等.AbstractQueue 提供了 Queue 接口主要方法的实现，以减少实现 Queue 的工作量。</p>
+<h2 id="3、Queue-方法简述"><a href="#3、Queue-方法简述" class="headerlink" title="3、Queue 方法简述"></a>3、Queue 方法简述</h2><p>队列通常（但不一定）以FIFO（<strong>先进先出</strong>）方式对元素进行排序。例外的是优先级队列，它根据提供的比较器对元素进行排序，或者元素的自然排序，以及LIFO队列（或<strong>堆栈</strong>），它们对元素LIFO（<strong>后进先出</strong>）进行排序。</p>
+<p>🌂无论使用什么顺序，队列的头部都是通过调用remove（）或poll（）来删除的元素。 在FIFO队列中，所有新元素都插入队列的尾部。</p>
+<p>其他类型的队列可能使用不同的放置规则。 每个Queue实现都必须指定其排序属性。</p>
+<p>Queue接口<strong>不定义阻塞队列</strong>方法，这在并发编程中很常见。 这些等待元素出现或空间可用的方法在BlockingQueue接口中定义，该接口扩展了此接口。</p>
+<p>队列实现通常<strong>不允许插入null元素</strong>，尽管某些实现（如LinkedList）不禁止插入null。 即使在允许它的实现中，也不应将null插入到Queue中，因为null也被poll方法用作特殊返回值，以指示队列不包含任何元素。</p>
+<p>下面我们将讨论一些有用且经常使用的 Java Queue 方法：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>方法描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>boolean add(E e)</td>
+<td>如果可以在不违反容量限制的情况下立即执行此操作，则将指定的元素插入此队列，成功时返回true，如果当前没有可用空间则抛出IllegalStateException。</td>
+</tr>
+<tr>
+<td>boolean offer(E e)</td>
+<td>如果可以在不违反容量限制的情况下立即执行此操作，则将指定的元素插入此队列，成功时返回true，如果当前没有可用空间则返回 false。</td>
+</tr>
+<tr>
+<td>E remove()</td>
+<td>检索并删除此队列的头部元素。 此方法与poll的不同之处仅在于，如果此队列为空，则抛出异常 NoSuchElementException。</td>
+</tr>
+<tr>
+<td>E poll()</td>
+<td>检索并删除此队列的头部，如果此队列为空，则返回null。</td>
+</tr>
+<tr>
+<td>E element()</td>
+<td>检索但不删除此队列的头部。 此方法与peek的不同之处仅在于，如果此队列为空，则抛出异常 NoSuchElementException。</td>
+</tr>
+<tr>
+<td>E peek()</td>
+<td>检索但不移除此队列的头部，如果此队列为空，则返回null。</td>
+</tr>
+</tbody></table>
+<h2 id="4、Java-Array-to-Queue"><a href="#4、Java-Array-to-Queue" class="headerlink" title="4、Java Array to Queue"></a>4、Java Array to Queue</h2><p>在这里，我们将通过一个简单的例子演示如何使用“Collections.addAll（）”方法将Java数组转换为Queue。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">       String nums[] = &#123;<span class="string">&quot;one&quot;</span>, <span class="string">&quot;two&quot;</span>, <span class="string">&quot;three&quot;</span>, <span class="string">&quot;four&quot;</span>, <span class="string">&quot;five&quot;</span>&#125;;</span><br><span class="line">       Queue&lt;String&gt; queue = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">       Collections.addAll(queue, nums);</span><br><span class="line">       System.out.println(queue);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><strong>输出结果：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[one, two, three, four, five]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="5、Java-Queue-to-Array"><a href="#5、Java-Queue-to-Array" class="headerlink" title="5、Java Queue to Array"></a>5、Java Queue to Array</h2><p>在这里，我们将通过一个简单的例子演示如何使用“<strong>toArray（）</strong>”将Java队列转换为Java数组。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        Queue&lt;String&gt; queue = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        queue.add(<span class="string">&quot;one&quot;</span>);</span><br><span class="line">        queue.add(<span class="string">&quot;two&quot;</span>);</span><br><span class="line">        queue.add(<span class="string">&quot;three&quot;</span>);</span><br><span class="line">        queue.add(<span class="string">&quot;four&quot;</span>);</span><br><span class="line">        queue.add(<span class="string">&quot;five&quot;</span>);</span><br><span class="line"></span><br><span class="line">        String strArray[] = queue.toArray(<span class="keyword">new</span> <span class="title class_">String</span>[queue.size()]);</span><br><span class="line">        System.out.println(<span class="string">&quot;队列转换为数组：&quot;</span> + Arrays.toString(strArray));</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><strong>输出结果：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">队列转换为数组：[one, two, three, four, five]</span><br></pre></td></tr></table></figure>
+<h2 id="6、Java队列常用操作"><a href="#6、Java队列常用操作" class="headerlink" title="6、Java队列常用操作"></a>6、Java队列常用操作</h2><p>Java Queue支持Collection接口支持的<strong>所有</strong>操作以及更多操作。 它以两种形式支持几乎所有操作：</p>
+<p>🌂一种在操作失败时抛出异常，另一种返回特殊值（null或false，具体取决于操作）。</p>
+<p>🌂一种形式的插入操作专门用于容量限制的队列实现，在大多数实现中，插入操作不会失败。</p>
+<p>队列方法的摘要</p>
+<table>
+<thead>
+<tr>
+<th>Operation（操作）</th>
+<th>Throws exception（抛出异常）</th>
+<th>Returns special value（返回指定值）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Insert（插入）</td>
+<td>add(e)</td>
+<td>offer(e)</td>
+</tr>
+<tr>
+<td>Remove（删除）</td>
+<td>remove()</td>
+<td>poll()</td>
+</tr>
+<tr>
+<td>Examine（检查）</td>
+<td>element()</td>
+<td>peek()</td>
+</tr>
+</tbody></table>
+<p>🌂🌂🌂接下来我们将用示例演示每种操作方法的使用。</p>
+<h3 id="6-1、Java-队列插入操作"><a href="#6-1、Java-队列插入操作" class="headerlink" title="6.1、Java 队列插入操作"></a>6.1、Java 队列插入操作</h3><h4 id="6-1-1、add"><a href="#6-1-1、add" class="headerlink" title="6.1.1、add()"></a>6.1.1、add()</h4><p><strong>add（）</strong>操作用于将新元素插入队列。 如果它成功执行插入操作，则返回“<strong>true</strong>”值。 否则抛出<strong>java.lang.IllegalStateException</strong>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        BlockingQueue&lt;String&gt; queue = <span class="keyword">new</span> <span class="title class_">ArrayBlockingQueue</span>&lt;&gt;(<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">        System.out.println(queue.add(<span class="string">&quot;one&quot;</span>));</span><br><span class="line">        System.out.println(queue.add(<span class="string">&quot;two&quot;</span>));</span><br><span class="line">        System.out.println(<span class="string">&quot;队列中的元素：&quot;</span>+queue);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><strong>输出结果：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">true</span></span><br><span class="line"><span class="literal">true</span></span><br><span class="line">队列中的元素：[one, two]</span><br></pre></td></tr></table></figure>
+<p>由于我们的队列仅限于两个元素，当我们尝试使用BlockingQueue.add（）添加第三个元素时，它会抛出异常，如上所示。</p>
+<h4 id="6-1-2、offer"><a href="#6-1-2、offer" class="headerlink" title="6.1.2、offer()"></a>6.1.2、offer()</h4><p>offer（）操作用于将新元素插入队列。 如果它成功执行插入操作，则返回“true”值。 否则返回“false”值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        BlockingQueue&lt;String&gt; queue = <span class="keyword">new</span> <span class="title class_">ArrayBlockingQueue</span>&lt;&gt;(<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">        System.out.println(queue.offer(<span class="string">&quot;one&quot;</span>));</span><br><span class="line">        System.out.println(queue.offer(<span class="string">&quot;two&quot;</span>));</span><br><span class="line">        System.out.println(<span class="string">&quot;队列中的元素：&quot;</span>+queue);</span><br><span class="line">        System.out.println(<span class="string">&quot;队列已满，再次offer元素：&quot;</span>+queue.offer(<span class="string">&quot;three&quot;</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><strong>输出结果：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">true</span></span><br><span class="line"><span class="literal">true</span></span><br><span class="line">队列中的元素：[one, two]</span><br><span class="line">队列已满，再次offer元素：<span class="literal">false</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2、Java-队列删除操作"><a href="#6-2、Java-队列删除操作" class="headerlink" title="6.2、Java 队列删除操作"></a>6.2、Java 队列删除操作</h3><h4 id="6-2-1、remove"><a href="#6-2-1、remove" class="headerlink" title="6.2.1、remove()"></a>6.2.1、remove()</h4><p><strong>remove（）</strong>操作用于从队列头部删除元素。 如果它成功执行删除操作，则<strong>返回队列的head元素</strong>。 否则抛出<strong>java.util.NoSuchElementException</strong>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">       Queue&lt;String&gt; queue = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">       queue.offer(<span class="string">&quot;one&quot;</span>);</span><br><span class="line">       queue.offer(<span class="string">&quot;two&quot;</span>);</span><br><span class="line">       System.out.println(<span class="string">&quot;队列中的元素：&quot;</span> + queue);</span><br><span class="line">       System.out.println(<span class="string">&quot;删除第一个元素：&quot;</span> + queue.remove());</span><br><span class="line">       System.out.println(<span class="string">&quot;删除第二个元素：&quot;</span> + queue.remove());</span><br><span class="line">       System.out.println(<span class="string">&quot;删除第三个元素：&quot;</span> + queue.remove());</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p><strong>输出结果：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">队列中的元素：[one, two]</span><br><span class="line">删除第一个元素：one</span><br><span class="line">删除第二个元素：two</span><br><span class="line">Exception in thread <span class="string">&quot;main&quot;</span> java.util.NoSuchElementException</span><br><span class="line">	at java.util.LinkedList.removeFirst(LinkedList.java:<span class="number">270</span>)</span><br><span class="line">	at java.util.LinkedList.remove(LinkedList.java:<span class="number">685</span>)</span><br><span class="line">	at com.lkf.collection.queue.QueueRemoveOperation.main(QueueRemoveOperation.java:<span class="number">20</span>)</span><br></pre></td></tr></table></figure>
+<p>由于我们的队列只有两个元素，当我们尝试第三次调用remove（）方法时，它会抛出一个<strong>异常</strong>，如上所示。</p>
+<h4 id="6-2-2、poll"><a href="#6-2-2、poll" class="headerlink" title="6.2.2、poll()"></a>6.2.2、poll()</h4><p><strong>poll（）</strong>操作用于从队列头部删除元素。 如果它成功执行删除操作，则<strong>返回队列的head元素</strong>。 否则返回“<strong>null</strong>”值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">       Queue&lt;String&gt; queue = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">       queue.offer(<span class="string">&quot;one&quot;</span>);</span><br><span class="line">       queue.offer(<span class="string">&quot;two&quot;</span>);</span><br><span class="line">       System.out.println(<span class="string">&quot;队列中的元素：&quot;</span> + queue);</span><br><span class="line">       System.out.println(<span class="string">&quot;删除第一个元素：&quot;</span> + queue.poll());</span><br><span class="line">       System.out.println(<span class="string">&quot;删除第二个元素：&quot;</span> + queue.poll());</span><br><span class="line">       System.out.println(<span class="string">&quot;删除第三个元素：&quot;</span> + queue.poll());</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p><strong>输出结果：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">队列中的元素：[one, two]</span><br><span class="line">删除第一个元素：one</span><br><span class="line">删除第二个元素：two</span><br><span class="line">删除第三个元素：<span class="literal">null</span></span><br></pre></td></tr></table></figure>
+<p>由于我们的队列只有两个元素，当我们尝试第三次调用poll（）方法时，它返回null值，如上所示。</p>
+<h3 id="6-3、Java-队列检索操作"><a href="#6-3、Java-队列检索操作" class="headerlink" title="6.3、Java 队列检索操作"></a>6.3、Java 队列检索操作</h3><h4 id="6-3-1、element"><a href="#6-3-1、element" class="headerlink" title="6.3.1、element()"></a>6.3.1、element()</h4><p><strong>element（）</strong>操作用于从队列头部检索元素，而不删除它。 如果它成功执行检查操作，则<strong>返回队列的head元素</strong>。 否则抛出<strong>java.util.NoSuchElementException</strong>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        Queue&lt;String&gt; queue = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        queue.add(<span class="string">&quot;one&quot;</span>);</span><br><span class="line"></span><br><span class="line">        System.out.println(queue.element());</span><br><span class="line">        System.out.println(queue);</span><br><span class="line">        queue.clear();</span><br><span class="line">        System.out.println(queue.element());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><strong>输出结果：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">one</span><br><span class="line">[one]</span><br><span class="line">Exception in thread <span class="string">&quot;main&quot;</span> java.util.NoSuchElementException</span><br><span class="line">	at java.util.LinkedList.getFirst(LinkedList.java:<span class="number">244</span>)</span><br><span class="line">	at java.util.LinkedList.element(LinkedList.java:<span class="number">663</span>)</span><br><span class="line">	at com.lkf.collection.queue.QueueElementOperation.main(QueueElementOperation.java:<span class="number">21</span>)</span><br></pre></td></tr></table></figure>
+
+<p>如果我们尝试在空Queue上调用element（）方法，它会抛出异常，如上所示。</p>
+<h4 id="6-3-2、peek"><a href="#6-3-2、peek" class="headerlink" title="6.3.2、peek()"></a>6.3.2、peek()</h4><p><strong>peek（）</strong>操作用于从队列头部检索元素，而不删除它。 如果它成功执行检查操作，则<strong>返回队列的head元素</strong>。 否则返回<strong>null</strong>值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">       Queue&lt;String&gt; queue = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">       queue.add(<span class="string">&quot;one&quot;</span>);</span><br><span class="line"></span><br><span class="line">       System.out.println(queue.peek());</span><br><span class="line">       System.out.println(queue);</span><br><span class="line">       queue.clear();</span><br><span class="line">       System.out.println(queue.peek());</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p><strong>输出结果：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">one</span><br><span class="line">[one]</span><br><span class="line"><span class="literal">null</span></span><br></pre></td></tr></table></figure>
+<p>如果我们尝试在空Queue上调用peek（）方法，它将返回null值，但不会抛出异常，如上所示。</p>
+<h3 id="6-4、Java-队列常用操作方法的区别"><a href="#6-4、Java-队列常用操作方法的区别" class="headerlink" title="6.4、Java 队列常用操作方法的区别"></a>6.4、Java 队列常用操作方法的区别</h3><h4 id="6-4-1、add-与-offer-区别"><a href="#6-4-1、add-与-offer-区别" class="headerlink" title="6.4.1、add 与 offer 区别"></a>6.4.1、add 与 offer 区别</h4><p>add 和 offer 方法都是向队列中添加一个元素。<br>当一个大小受限制的队列满时，使用 add 方法将会抛出一个 unchecked 异常；使用 offer 方法会返回 false。</p>
+<h4 id="6-4-2、remove-与-poll-区别"><a href="#6-4-2、remove-与-poll-区别" class="headerlink" title="6.4.2、remove 与 poll 区别"></a>6.4.2、remove 与 poll 区别</h4><p>🌂remove() 和 poll() 方法都是删除并返回队列头部的第一个元素。确切地说，从队列中删除哪个元素是队列排序策略的一个功能，该策略因实现而异。<br>🌂remove（）和 poll（）方法的不同之处仅在于队列为空时的行为：remove（）方法抛出异常，而poll（）方法返回null。</p>
+<h4 id="6-4-3、element-与-peek-区别"><a href="#6-4-3、element-与-peek-区别" class="headerlink" title="6.4.3、element 与 peek 区别"></a>6.4.3、element 与 peek 区别</h4><p>element（）和 peek（）方法返回但不删除队列的头部元素。与 remove() 方法类似，在队列为空时， element() 抛出一个异常，而 peek() 返回 null。</p>
+<h2 id="7、Java-队列分类"><a href="#7、Java-队列分类" class="headerlink" title="7、Java 队列分类"></a>7、Java 队列分类</h2><p>除了以下队列的分类，还有些队列是 Deques，有些队列是PriorityQueues。另外，java.util 包中可用的所有队列都是无界队列，java.util.concurrent 包中可用的队列都是有界队列。</p>
+<h3 id="7-1、有界队列（Bounded-Queues）-和-无界队列（Unbounded-Queues）"><a href="#7-1、有界队列（Bounded-Queues）-和-无界队列（Unbounded-Queues）" class="headerlink" title="7.1、有界队列（Bounded Queues） 和 无界队列（Unbounded Queues）"></a>7.1、有界队列（Bounded Queues） 和 无界队列（Unbounded Queues）</h3><p>在Java中，我们可以找到很多 Queue 实现。 我们可以将它们大致分为以下两种类型：<br>有界队列 和 无界队列</p>
+<h4 id="7-1-1、有界队列（Bounded-Queues）"><a href="#7-1-1、有界队列（Bounded-Queues）" class="headerlink" title="7.1.1、有界队列（Bounded Queues）"></a>7.1.1、有界队列（Bounded Queues）</h4><p>有界队列是有容量限制的队列，这意味着我们需要在创建时设置队列的最大大小。 例如：ArrayBlockingQueue。</p>
+<h4 id="7-1-2、无界队列（Unbounded-Queues）"><a href="#7-1-2、无界队列（Unbounded-Queues）" class="headerlink" title="7.1.2、无界队列（Unbounded Queues）"></a>7.1.2、无界队列（Unbounded Queues）</h4><p>无界队列是不受容量限制的队列，这意味着我们不需要设置队列的大小。 例如：LinkedList</p>
+<h3 id="7-2、阻塞队列（BlockingQueue）-和-非阻塞队列（Non-Blocking-Queues）"><a href="#7-2、阻塞队列（BlockingQueue）-和-非阻塞队列（Non-Blocking-Queues）" class="headerlink" title="7.2、阻塞队列（BlockingQueue） 和 非阻塞队列（Non-Blocking Queues）"></a>7.2、阻塞队列（BlockingQueue） 和 非阻塞队列（Non-Blocking Queues）</h3><p>在其他方面，我们可以将它们大致分为以下两种类型：阻塞队列、非阻塞队列</p>
+<h4 id="7-2-1、阻塞队列（BlockingQueue）"><a href="#7-2-1、阻塞队列（BlockingQueue）" class="headerlink" title="7.2.1、阻塞队列（BlockingQueue）"></a>7.2.1、阻塞队列（BlockingQueue）</h4><p>实现 BlockingQueue 接口的所有队列都是 阻塞队列，其余的都是 非阻塞队列。</p>
+<p>BlockingQueues阻塞直到它完成它的工作或超时，但Non-BlockingQueues不会。</p>
+<h5 id="7-2-1-1、BlockingQueue-操作"><a href="#7-2-1-1、BlockingQueue-操作" class="headerlink" title="7.2.1.1、BlockingQueue 操作"></a>7.2.1.1、BlockingQueue 操作</h5><p>除了Queue的两种操作形式之外，BlockingQueue 还支持另外两种形式，如下所示：</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Throws exception</th>
+<th>Special value</th>
+<th>Blocks</th>
+<th>Times out</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Insert</td>
+<td>add(e)</td>
+<td>offer(e)</td>
+<td>put(e)</td>
+<td>offer(e, time, unit)</td>
+</tr>
+<tr>
+<td>Remove</td>
+<td>remove()</td>
+<td>poll()</td>
+<td>take()</td>
+<td>poll(time, unit)</td>
+</tr>
+<tr>
+<td>Examine</td>
+<td>element()</td>
+<td>peek()</td>
+<td>N&#x2F;A</td>
+<td>N&#x2F;A</td>
+</tr>
+</tbody></table>
+<h4 id="7-2-2、非阻塞队列（Non-Blocking-Queues）"><a href="#7-2-2、非阻塞队列（Non-Blocking-Queues）" class="headerlink" title="7.2.2、非阻塞队列（Non-Blocking Queues）"></a>7.2.2、非阻塞队列（Non-Blocking Queues）</h4><p>非实现 BlockingQueue 接口的所有队列都是 非阻塞队列。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://huangwan.top">黄皖</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://huangwan.top/2020/04/04/Java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%EF%BC%88%E4%B9%9D%EF%BC%89%EF%BC%9AQueue%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">http://huangwan.top/2020/04/04/Java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%EF%BC%88%E4%B9%9D%EF%BC%89%EF%BC%9AQueue%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://huangwan.top" target="_blank">黄皖's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6/">框架</a></div><div class="post_share"><div class="social-share" data-image="https://img.huangwan.top/blog_bg/18.webp" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img.huangwan.top/blog_bg/wechat.webp" target="_blank"><img class="post-qr-code-img" src="https://img.huangwan.top/blog_bg/wechat.webp" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img.huangwan.top/blog_bg/alipay.webp" target="_blank"><img class="post-qr-code-img" src="https://img.huangwan.top/blog_bg/alipay.webp" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/04/04/Java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%EF%BC%88%E5%8D%81%EF%BC%89%EF%BC%9ADeque%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Java集合框架（十）：Deque 源码分析"><img class="cover" src="https://img.huangwan.top/blog_bg/15.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Java集合框架（十）：Deque 源码分析</div></div></a></div><div class="next-post pull-right"><a href="/2020/04/03/Java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%EF%BC%88%E5%85%AB%EF%BC%89%EF%BC%9AList%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Java集合框架（八）：List 源码分析"><img class="cover" src="https://img.huangwan.top/blog_bg/9.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Java集合框架（八）：List 源码分析</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2020/05/01/Java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%E5%B0%8F%E7%BB%93/" title="java集合框架小结"><img class="cover" src="https://img.huangwan.top/blog_bg/12.webp" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-05-01</div><div class="title">java集合框架小结</div></div></a></div><div><a href="/2020/03/29/Java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%A4%A7%E7%BA%B2/" title="Java集合框架（一）：大纲"><img class="cover" src="https://img.huangwan.top/blog_bg/18.webp" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-03-29</div><div class="title">Java集合框架（一）：大纲</div></div></a></div><div><a href="/2020/04/03/Java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%EF%BC%88%E4%B8%83%EF%BC%89%EF%BC%9ASortedSet%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Java集合框架（七）：SortedSet 源码分析"><img class="cover" src="https://img.huangwan.top/blog_bg/12.webp" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-04-03</div><div class="title">Java集合框架（七）：SortedSet 源码分析</div></div></a></div><div><a href="/2020/03/30/Java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9ACollection%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Java集合框架（三）：Collection 源码分析"><img class="cover" src="https://img.huangwan.top/blog_bg/7.webp" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-03-30</div><div class="title">Java集合框架（三）：Collection 源码分析</div></div></a></div><div><a href="/2020/04/16/Java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%EF%BC%88%E4%BA%8C%E5%8D%81%EF%BC%89%EF%BC%9ATreeMap%20%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" title="Java集合框架（二十）：TreeMap 源码解析"><img class="cover" src="https://img.huangwan.top/blog_bg/16.webp" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-04-16</div><div class="title">Java集合框架（二十）：TreeMap 源码解析</div></div></a></div><div><a href="/2020/05/01/Java%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%EF%BC%88%E4%BA%8C%E5%8D%81%E4%B8%80%EF%BC%89%EF%BC%9AHashTable%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="Java集合框架（二十一）：HashTable 源码分析"><img class="cover" src="https://img.huangwan.top/blog_bg/11.webp" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-05-01</div><div class="title">Java集合框架（二十一）：HashTable 源码分析</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://img.huangwan.top/blog_bg/avatar.webp" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">黄皖</div><div class="author-info__description">一尘不染不是不再有尘埃，而是尘埃让它飞扬，我自做我的阳光。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">84</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">16</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/huangwanya/huangwanya.github.io" target="_blank" title="Github"><i class="fab fa-github" style="color: #hdhfbb;"></i></a><a class="social-icon" href="mailto:54609226@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81Queue-%E7%AE%80%E8%BF%B01%E3%80%81Queue-%E7%AE%80%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">1、Queue 简述1、Queue 简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81Queue-%E7%B1%BB%E5%9B%BE"><span class="toc-number">2.</span> <span class="toc-text">2、Queue 类图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E3%80%81Queue-%E6%96%B9%E6%B3%95%E7%AE%80%E8%BF%B0"><span class="toc-number">3.</span> <span class="toc-text">3、Queue 方法简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4%E3%80%81Java-Array-to-Queue"><span class="toc-number">4.</span> <span class="toc-text">4、Java Array to Queue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5%E3%80%81Java-Queue-to-Array"><span class="toc-number">5.</span> <span class="toc-text">5、Java Queue to Array</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6%E3%80%81Java%E9%98%9F%E5%88%97%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C"><span class="toc-number">6.</span> <span class="toc-text">6、Java队列常用操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1%E3%80%81Java-%E9%98%9F%E5%88%97%E6%8F%92%E5%85%A5%E6%93%8D%E4%BD%9C"><span class="toc-number">6.1.</span> <span class="toc-text">6.1、Java 队列插入操作</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-1%E3%80%81add"><span class="toc-number">6.1.1.</span> <span class="toc-text">6.1.1、add()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-2%E3%80%81offer"><span class="toc-number">6.1.2.</span> <span class="toc-text">6.1.2、offer()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2%E3%80%81Java-%E9%98%9F%E5%88%97%E5%88%A0%E9%99%A4%E6%93%8D%E4%BD%9C"><span class="toc-number">6.2.</span> <span class="toc-text">6.2、Java 队列删除操作</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-1%E3%80%81remove"><span class="toc-number">6.2.1.</span> <span class="toc-text">6.2.1、remove()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-2%E3%80%81poll"><span class="toc-number">6.2.2.</span> <span class="toc-text">6.2.2、poll()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3%E3%80%81Java-%E9%98%9F%E5%88%97%E6%A3%80%E7%B4%A2%E6%93%8D%E4%BD%9C"><span class="toc-number">6.3.</span> <span class="toc-text">6.3、Java 队列检索操作</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-1%E3%80%81element"><span class="toc-number">6.3.1.</span> <span class="toc-text">6.3.1、element()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-2%E3%80%81peek"><span class="toc-number">6.3.2.</span> <span class="toc-text">6.3.2、peek()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4%E3%80%81Java-%E9%98%9F%E5%88%97%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E6%96%B9%E6%B3%95%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">6.4.</span> <span class="toc-text">6.4、Java 队列常用操作方法的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-4-1%E3%80%81add-%E4%B8%8E-offer-%E5%8C%BA%E5%88%AB"><span class="toc-number">6.4.1.</span> <span class="toc-text">6.4.1、add 与 offer 区别</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-4-2%E3%80%81remove-%E4%B8%8E-poll-%E5%8C%BA%E5%88%AB"><span class="toc-number">6.4.2.</span> <span class="toc-text">6.4.2、remove 与 poll 区别</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-4-3%E3%80%81element-%E4%B8%8E-peek-%E5%8C%BA%E5%88%AB"><span class="toc-number">6.4.3.</span> <span class="toc-text">6.4.3、element 与 peek 区别</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7%E3%80%81Java-%E9%98%9F%E5%88%97%E5%88%86%E7%B1%BB"><span class="toc-number">7.</span> <span class="toc-text">7、Java 队列分类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1%E3%80%81%E6%9C%89%E7%95%8C%E9%98%9F%E5%88%97%EF%BC%88Bounded-Queues%EF%BC%89-%E5%92%8C-%E6%97%A0%E7%95%8C%E9%98%9F%E5%88%97%EF%BC%88Unbounded-Queues%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">7.1、有界队列（Bounded Queues） 和 无界队列（Unbounded Queues）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#7-1-1%E3%80%81%E6%9C%89%E7%95%8C%E9%98%9F%E5%88%97%EF%BC%88Bounded-Queues%EF%BC%89"><span class="toc-number">7.1.1.</span> <span class="toc-text">7.1.1、有界队列（Bounded Queues）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-1-2%E3%80%81%E6%97%A0%E7%95%8C%E9%98%9F%E5%88%97%EF%BC%88Unbounded-Queues%EF%BC%89"><span class="toc-number">7.1.2.</span> <span class="toc-text">7.1.2、无界队列（Unbounded Queues）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2%E3%80%81%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97%EF%BC%88BlockingQueue%EF%BC%89-%E5%92%8C-%E9%9D%9E%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97%EF%BC%88Non-Blocking-Queues%EF%BC%89"><span class="toc-number">7.2.</span> <span class="toc-text">7.2、阻塞队列（BlockingQueue） 和 非阻塞队列（Non-Blocking Queues）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-1%E3%80%81%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97%EF%BC%88BlockingQueue%EF%BC%89"><span class="toc-number">7.2.1.</span> <span class="toc-text">7.2.1、阻塞队列（BlockingQueue）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#7-2-1-1%E3%80%81BlockingQueue-%E6%93%8D%E4%BD%9C"><span class="toc-number">7.2.1.1.</span> <span class="toc-text">7.2.1.1、BlockingQueue 操作</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-2%E3%80%81%E9%9D%9E%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97%EF%BC%88Non-Blocking-Queues%EF%BC%89"><span class="toc-number">7.2.2.</span> <span class="toc-text">7.2.2、非阻塞队列（Non-Blocking Queues）</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/06/20/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AC%AC%E4%BA%94%E7%AB%A0/" title="计算机网络第五章"><img src="https://img.huangwan.top/blog_bg/11.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="计算机网络第五章"/></a><div class="content"><a class="title" href="/2021/06/20/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AC%AC%E4%BA%94%E7%AB%A0/" title="计算机网络第五章">计算机网络第五章</a><time datetime="2021-06-20T08:28:24.000Z" title="发表于 2021-06-20 16:28:24">2021-06-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/06/20/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AC%AC%E5%9B%9B%E7%AB%A0/" title="计算机网络第四章"><img src="https://img.huangwan.top/blog_bg/11.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="计算机网络第四章"/></a><div class="content"><a class="title" href="/2021/06/20/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AC%AC%E5%9B%9B%E7%AB%A0/" title="计算机网络第四章">计算机网络第四章</a><time datetime="2021-06-20T08:27:33.000Z" title="发表于 2021-06-20 16:27:33">2021-06-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/06/18/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AC%AC%E4%B8%89%E7%AB%A0/" title="计算机网络第三章"><img src="https://img.huangwan.top/blog_bg/15.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="计算机网络第三章"/></a><div class="content"><a class="title" href="/2021/06/18/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AC%AC%E4%B8%89%E7%AB%A0/" title="计算机网络第三章">计算机网络第三章</a><time datetime="2021-06-18T15:55:04.000Z" title="发表于 2021-06-18 23:55:04">2021-06-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/06/17/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AC%AC%E4%BA%8C%E7%AB%A0/" title="计算机网络第二章"><img src="https://img.huangwan.top/blog_bg/12.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="计算机网络第二章"/></a><div class="content"><a class="title" href="/2021/06/17/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AC%AC%E4%BA%8C%E7%AB%A0/" title="计算机网络第二章">计算机网络第二章</a><time datetime="2021-06-17T15:36:21.000Z" title="发表于 2021-06-17 23:36:21">2021-06-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/06/16/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E6%A6%82%E8%BF%B0/" title="计算机网络概述"><img src="https://img.huangwan.top/blog_bg/16.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="计算机网络概述"/></a><div class="content"><a class="title" href="/2021/06/16/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E6%A6%82%E8%BF%B0/" title="计算机网络概述">计算机网络概述</a><time datetime="2021-06-16T15:56:56.000Z" title="发表于 2021-06-16 23:56:56">2021-06-16</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2024 By 黄皖</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text"><div class="icp"><a target="_blank" rel="noopener external nofollow noreferrer" href="https://beian.miit.gov.cn"><i class="fa fa-registered" aria-hidden="true"></i> <span>鄂ICP备2024035367号-1</span></a></div></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.12.0"></script><script src="/js/main.js?v=4.12.0"></script><script src="/js/tw_cn.js?v=4.12.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.32/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(() => {
+  const init = () => {
+    twikoo.init(Object.assign({
+      el: '#twikoo-wrap',
+      envId: 'https://twikoo.huangwan.top/',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      }
+    }, null))
+  }
+
+  const loadTwikoo = () => {
+    if (typeof twikoo === 'object') setTimeout(init,0)
+    else getScript('https://cdn.jsdelivr.net/npm/twikoo@1.6.29/dist/twikoo.all.min.js').then(init)
+  }
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://twikoo.huangwan.top/',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  if ('Twikoo' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else {
+      loadTwikoo()
+      
+    }
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/click-heart.min.js" async="async" mobile="false"></script><script id="click-show-text" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/click-show-text.min.js" data-mobile="false" data-text="富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善" data-fontsize="15px" data-random="false" async="async"></script><script>(() => {
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/44119714.js","daovoice")
+
+  const isChatBtn = false
+  const isChatHideShow = false
+
+  daovoice('init', {
+    app_id: '44119714',},{
+    launcher: { 
+      disableLauncherIcon: isChatBtn
+    },
+  });
+  daovoice('update');
+
+  if (isChatBtn) {
+    window.chatBtnFn = () => {
+      const isShow = document.getElementById('daodream-messenger').classList.contains('daodream-messenger-active')
+      isShow ? daovoice('hide') : daovoice('show')
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        daovoice('update', {},{
+          launcher: {
+            disableLauncherIcon: true
+          }
+        })
+      },
+      show: () => {
+        daovoice('update', {}, {
+          launcher: {
+            disableLauncherIcon: false
+          }
+        })
+      }
+    }
+  }
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.12.0"></script></div></div></body></html>
